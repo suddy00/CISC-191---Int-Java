@@ -1,7 +1,7 @@
 Overriding Methods
 
 ### Main Class()
-```
+```java
 public class Main {
     public static void main(String[] args) {
 
@@ -17,7 +17,7 @@ public class Main {
 ```
 
 ### Book Class()
-```
+```java
 public class Book {
     private String bookTitle;
     private String bookAuthor;
@@ -66,7 +66,7 @@ public class Book {
 ```
 
 ### Encyclopedia Class()
-```
+```java
 public class Encyclopedia extends Book{
     private String bookEdition;
     private int bookPages;
