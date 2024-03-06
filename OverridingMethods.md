@@ -92,14 +92,10 @@ public class Encyclopedia extends Book{
     }
 
     public void printInfo(){
-        System.out.println("Book Information: ");
-        System.out.println("\tBook Title: " + getBookTitle());
-        System.out.println("\tAuthor: " + getBookAuthor());
-        System.out.println("\tPublisher: " + getBookPublisher());
-        System.out.println("\tPublication Date: " + getBookPublicationDate());
+        super.printInfo();
         System.out.println("\tEdition: " + bookEdition);
         System.out.println("\tNumber of Pages: " + bookPages);
-    }
+    }    
 
 }
 ```
