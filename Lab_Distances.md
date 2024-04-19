@@ -1,3 +1,11 @@
+# Challenges
+    Becoming familiar with GUI.
+    Still working on figuring out alignment for the labels
+    
+# Output
+![2024-04-19](https://github.com/suddy00/CISC_191_Int_Java/assets/17439019/2a20d554-0f59-450f-a9ea-18cca7d449b8)
+
+
 ```java
 import java.awt.*;
 import java.awt.event.ActionEvent;
