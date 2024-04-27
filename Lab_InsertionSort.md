@@ -1,4 +1,5 @@
-# Was not able to achieve the same output for comparisons
+# Challenges
+    Was not able to achieve the same output for comparisons
 
 ```java
 public class Main {
