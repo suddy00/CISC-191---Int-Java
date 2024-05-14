@@ -1,54 +1,5 @@
-## Challenges:
-  -Input data type as INT for Cylinders and Horsepower but because they had periods following received a data mismatch error.
-    Tried: 
-      Altered table properties. (Year is definitely NOT a double) bad solution
-      Creating "." delimeter. Prevous double values include "." so caused other mismatches 
-      returned to all doubles ...
-  - Recieved input SQL syntax error at statement.executeUpdate line
-    Triple checked syntax
-    Altered all fields to varchar
-    Changed all input to string, setting delimeter to a space
-    removed all variable data types, using input.next()
-    removed all varibales, reverted all Auto fields, imported .txt data via SQL ...
-- Received --secure-file-priv error
-    Tried:
-      load data local -- Loading local data is disabled error
-      exact location path
-      turned off (and on) local_infile
-  - Took a Break - Restarted. Set attributes to String, removed "'" in record, deleted 1 duplicate record. Altered name of a LOT of records. Upload successful.
-
-## Process:
-Create Database (Auto) and Table based on values given:
-
-create table AutoData (
-  mpg DOUBLE(3, 1), 
-  cylinders INT(2), 
-  displacement DOUBLE(4,1), 
-  horsepower INT(4), 
-  weight DOUBLE(4,0),  
-  acceleration DOUBLE(3,1),  
-  year YEAR,
-  origin VARCHAR(2),
-  name VARCHAR(255),  
-  primary key (name)
-); 
-later altered to:
-  mpg VARCHAR(4), 
-  cylinders VARCHAR(3), 
-  displacement VARCHAR(5), 
-  horsepower VARCHAR(5), 
-  weight VARCHAR(6),  
-  acceleration VARCHAR(6),  
-  year VARCHAR(4),
-  origin VARCHAR(3),
-  name VARCHAR(255),  
-  primary key (name)
-
-
-![AutoData](https://github.com/suddy00/CISC_191_Int_Java/assets/17439019/fbeafa97-a6c7-4343-8204-cbf797264a04)
-
-
-### Program to input records into SQL database:
+   
+### Program to input records into SQL database (Part 1):
 
 ```java
 import java.io.FileNotFoundException;
@@ -113,3 +64,182 @@ public class Main {
     }
 }
 ```
+
+## GUI with user input (Part 2)
+![2024-05-13](https://github.com/suddy00/CISC_191_Int_Java/assets/17439019/f8c6fb49-02f9-48dd-ae0f-94d569a87634)
+
+## Code:
+```java
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JButton;
+import javax.swing.JFormattedTextField;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import java.sql.*;
+
+public class AutoFrame extends JFrame implements ActionListener {
+    private JTextArea outputArea;                       // Displays Database info
+    private JButton refreshButton;                      // Triggers query
+    private JFormattedTextField inputField;             // Input
+
+    /* Constructor creates GUI components and adds GUI components
+       using a GridBagLayout. */
+    AutoFrame() {
+        GridBagConstraints layoutConst = null; // Used to specify GUI component layout
+        JScrollPane scrollPane = null;         // Container that adds a scroll bar
+        JLabel inputLabel = null;               // Label for input field
+        JLabel outputLabel = null;             // Label output
+
+
+        // Set frame's title
+        setTitle("Auto Program");
+
+        // Create labels
+        inputLabel = new JLabel("User Input:");
+        outputLabel = new JLabel("Auto Info:");
+
+        // Create output area and add it to scroll pane
+        outputArea = new JTextArea(10, 52);
+        scrollPane = new JScrollPane(outputArea);
+        outputArea.setEditable(false);
+
+        refreshButton = new JButton("Refresh");
+        refreshButton.addActionListener(this);
+
+        // Create savings field and specify the currency format
+        inputField = new JFormattedTextField();
+        inputField.setEditable(true);
+        inputField.setColumns(10); // Initial width of 10 units
+        inputField.setValue("All");
+        inputField.addActionListener(this);
+
+        // Use a GridBagLayout
+        setLayout(new GridBagLayout());
+
+        layoutConst = new GridBagConstraints();
+        layoutConst.insets = new Insets(10, 10, 5, 1);
+        layoutConst.anchor = GridBagConstraints.LINE_END;
+        layoutConst.gridx = 0;
+        layoutConst.gridy = 0;
+        add(inputLabel, layoutConst);
+
+        layoutConst = new GridBagConstraints();
+        layoutConst.insets = new Insets(10, 1, 5, 10);
+        layoutConst.fill = GridBagConstraints.HORIZONTAL;
+        layoutConst.gridx = 1;
+        layoutConst.gridy = 0;
+        add(inputField, layoutConst);
+
+        layoutConst = new GridBagConstraints();
+        layoutConst.insets = new Insets(0, 5, 0, 10);
+        layoutConst.fill = GridBagConstraints.BOTH;
+        layoutConst.gridx = 2;
+        layoutConst.gridy = 0;
+        add(refreshButton, layoutConst);
+
+        layoutConst = new GridBagConstraints();
+        layoutConst.insets = new Insets(10, 10, 1, 10);
+        layoutConst.fill = GridBagConstraints.HORIZONTAL;
+        layoutConst.gridx = 0;
+        layoutConst.gridy = 2;
+        add(outputLabel, layoutConst);
+
+        layoutConst = new GridBagConstraints();
+        layoutConst.insets = new Insets(1, 10, 10, 10);
+        layoutConst.fill = GridBagConstraints.HORIZONTAL;
+        layoutConst.gridx = 0;
+        layoutConst.gridy = 4;
+        layoutConst.gridwidth = 9; // 9 cells wide
+        add(scrollPane, layoutConst);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        String userInput = inputField.getText();
+
+        try {
+            outputArea.setText(runSqlStuff(userInput));
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /* Creates a AutoInfoFrame and makes it visible */
+    public static void main(String[] args) {
+
+        // Creates AutoInfoFrame and its components
+        AutoFrame myFrame = new AutoFrame();
+        myFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        myFrame.pack();
+        myFrame.setVisible(true);
+
+    }
+
+    public static String runSqlStuff(String uInput) throws SQLException, ClassNotFoundException{
+        StringBuilder autoStream = new StringBuilder();
+
+        // Load the JDBC driver
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        System.out.println("Driver loaded");
+
+        Connection connection = DriverManager.getConnection
+                ("jdbc:mysql://localhost/Auto","testuser","Pa$$word");
+        System.out.println("Database connected");
+
+        // Create a statement
+        Statement statement = connection.createStatement();
+
+        // Execute a statement
+        ResultSet resultSet = statement.executeQuery
+                ("select * from AutoData where name like '%"+ uInput+"%';");
+        // Iterate through the result and print the vehicle info
+        while (resultSet.next())
+            autoStream.append(resultSet.getString(1)).append("    ")
+                    .append(resultSet.getString(2)).append("    ").append(resultSet.getString(3))
+                    .append("    ").append(resultSet.getString(4)).append("    ")
+                    .append(resultSet.getString(5)).append("    ").append(resultSet.getString(6))
+                    .append("    ").append(resultSet.getString(7)).append("    ")
+                    .append(resultSet.getString(8)).append(" ").append(resultSet.getString(9)).append("\n");
+        // Close the connection
+        connection.close();
+
+        String autoOut = autoStream.toString();
+        return autoOut;
+    }
+}
+```
+
+
+## Challenges:
+  -Input data type as INT for Cylinders and Horsepower but because they had periods following received a data mismatch error.
+    Tried: 
+      Altered table properties. (Year is definitely NOT a double) bad solution
+      Creating "." delimeter. Prevous double values include "." so caused other mismatches 
+      returned to all doubles ...
+  - Recieved input SQL syntax error at statement.executeUpdate line
+    Triple checked syntax
+    Altered all fields to varchar
+    Changed all input to string, setting delimeter to a space
+    removed all variable data types, using input.next()
+    removed all varibales, reverted all Auto fields, imported .txt data via SQL ...
+- Received --secure-file-priv error
+    Tried:
+      load data local -- Loading local data is disabled error
+      exact location path
+      turned off (and on) local_infile
+  - Took a Break - Restarted. Set attributes to String, removed "'" in record, deleted 1 duplicate record. Altered name of a LOT of records. Upload successful.
+  - Gui output bad/hard to read
+    Tried:
+      Creating labels for all fields
+      Removing and resizing labels and output
+      Implementing a table
+      Deleted labels and individually spaced elements on the text field.
+  Using user input to query name info. "All" does not work do display all records. But an empty input achieves the same result.
